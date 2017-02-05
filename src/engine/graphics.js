@@ -51,7 +51,6 @@ export class Texture {
 		this.webGl = webGl
 		let gl = this.webGl.getContext()
 		this.id = gl.createTexture()
-		debugger;
 		this.image = new Image()
 		this.image.onload = () => {
 			gl.bindTexture(gl.TEXTURE_2D, this.id)
