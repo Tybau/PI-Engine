@@ -49,10 +49,10 @@ function init(){
 
 		gl.bindVertexArray(null);
 
-		//projectionMatrix = new Mat4().perspective(70.0, canvas.width/canvas.height, 0.1, 100.0);
-		projectionMatrix = new Mat4().ortho(0, canvas.width, canvas.height, 0, -1, 1);
+		projectionMatrix = new Mat4().perspective(70.0, canvas.width/canvas.height, 0.1, 100.0);
+		//projectionMatrix = new Mat4().ortho(0, canvas.width, canvas.height, 0, -1, 1);
 		transformationMatrix = new Mat4();
-		transformationMatrix.scale(200, 100, 1);
+		transformationMatrix.scale(1, 1, 1);
 		transformationMatrix.rotate(0, 0, 0);
 		transformationMatrix.translate(0, 0, 0);
 
@@ -70,11 +70,11 @@ function loop()
 }
 
 function update () {
-	// up += 0.02;
-	// transformationMatrix = new Mat4();
-	// transformationMatrix.scale(100, 100, 1);
-	// transformationMatrix.rotate(0, 0, up);
-	// transformationMatrix.translate(0, 0, 0);
+	up += 0.02;
+	transformationMatrix = new Mat4();
+	transformationMatrix.scale(1, 1, 1);
+	transformationMatrix.rotate(0, up, 0);
+	transformationMatrix.translate(0, 0, 5);
 }
 
 function render() {

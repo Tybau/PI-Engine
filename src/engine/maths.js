@@ -30,13 +30,11 @@ export class Mat4{
 		return this;
 	}
 	translate(x, y, z){
-		let i = new Mat4();
+		this.matrix[0][3] = x;
+		this.matrix[1][3] = y;
+		this.matrix[2][3] = z;
 
-		i.matrix[3][0] = x;
-		i.matrix[3][1] = y;
-		i.matrix[3][2] = z;
-
-		return this.mul(i);
+		return this;
 	}
 	rotateX(a){
 		let i = new Mat4();
@@ -110,9 +108,9 @@ export class Mat4{
 	}
 	flatten(){
 		let res = [];
-		for(let j = 0; j < 4; j++)
-			for(let i = 0; i < 4; i++)
-				res.push(this.matrix[i][j]);
+		for(let i = 0; i < 4; i++)
+			for(let j = 0; j < 4; j++)
+				res.push(this.matrix[j][i]);
 		return res;
 	}
 
