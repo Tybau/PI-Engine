@@ -8,7 +8,7 @@ let canvas = document.querySelector('#glcanvas');
 let wGL;
 let gl;
 let shader;
-let vao, vbo, tbo, ibo;
+let vao, vbo, tbo, nbo, ibo;
 
 let texture;
 
@@ -49,6 +49,38 @@ const vertices = [
 	1.0,	1.0,	-1.0,
 ];
 
+const normals = [
+	0, 0, -1,
+	0, 0, -1,
+	0, 0, -1,
+	0, 0, -1,
+
+	0, 0, 1,
+	0, 0, 1,
+	0, 0, 1,
+	0, 0, 1,
+
+	0, -1, 0,
+	0, -1, 0,
+	0, -1, 0,
+	0, -1, 0,
+
+	0, 1, 0,
+	0, 1, 0,
+	0, 1, 0,
+	0, 1, 0,
+
+	-1, 0, 0,
+	-1, 0, 0,
+	-1, 0, 0,
+	-1, 0, 0,
+
+	1, 0, 0,
+	1, 0, 0,
+	1, 0, 0,
+	1, 0, 0,
+]
+
 const textures = [
 	0.0,	1.0,
 	0.0,	0.0,
@@ -81,12 +113,14 @@ const textures = [
 	0.0,	0.0,
 ];
 
-const indices = [0, 2, 1, 0, 3, 2,
-				4, 5, 6, 4, 6, 7,
-				8, 9, 10, 8, 10, 11,
-				12, 14, 13, 12, 15, 14,
-				16, 18, 17, 16, 19, 18,
-				20, 21, 22, 20, 22, 23];
+const indices = [
+	0, 2, 1, 0, 3, 2,
+	4, 5, 6, 4, 6, 7,
+	8, 9, 10, 8, 10, 11,
+	12, 14, 13, 12, 15, 14,
+	16, 18, 17, 16, 19, 18,
+	20, 21, 22, 20, 22, 23
+];
 
 function init(){
 	wGL = new WebGL(canvas);
@@ -97,6 +131,7 @@ function init(){
 		vao = gl.createVertexArray();
 		vbo = gl.createBuffer();
 		tbo = gl.createBuffer();
+		nbo = gl.createBuffer(),
 		ibo = gl.createBuffer();
 
 		gl.enable(gl.DEPTH_TEST)
@@ -106,6 +141,7 @@ function init(){
 
 		gl.enableVertexAttribArray(0);
 		gl.enableVertexAttribArray(1);
+		gl.enableVertexAttribArray(2);
 
 		gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
@@ -114,6 +150,10 @@ function init(){
 		gl.bindBuffer(gl.ARRAY_BUFFER, tbo);
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textures), gl.STATIC_DRAW);
 		gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 0, 0);
+
+		gl.bindBuffer(gl.ARRAY_BUFFER, nbo);
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
+		gl.vertexAttribPointer(2, 3, gl.FLOAT, false, 0, 0);
 
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
 		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(indices), gl.STATIC_DRAW);
