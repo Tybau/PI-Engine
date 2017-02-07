@@ -16,6 +16,6 @@ out vec3 v_normal;
 void main(void) {
 	v_position = vec3(transformationMatrix * vec4(in_position, 1.0));
 	v_textureCoord = in_textureCoord;
-	v_normal = vec3(transformationMatrix * vec4(in_normal, 1.0));
+	v_normal = vec3(transformationMatrix * vec4(in_normal, 0.0));
 	gl_Position = projectionMatrix * transformationMatrix * vec4(in_position, 1.0);
 }
