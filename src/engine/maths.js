@@ -168,4 +168,19 @@ export class Vec3{
 
 		return new Vec3(nx, ny, nz);
 	}
+	getArray(){
+		return [this.x, this.y, this.z];
+	}
+}
+
+export class Color4{
+	constructor(r, g, b, a){
+		this.r = r;
+		this.g = g;
+		this.b = b;
+		this.a = a;
+	}
+	getArray(){
+		return [this.r, this.g, this.b, this.a];
+	}
 }

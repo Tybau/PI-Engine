@@ -1,5 +1,6 @@
 import {WebGL, Shader, Texture} from './engine/graphics.js'
-import {Mat4} from './engine/maths.js'
+import {Mat4, Vec3, Color4} from './engine/maths.js'
+import {Light} from './engine/light.js'
 
 import vertex from './shaders/main.vert'
 import fragment from './shaders/main.frag'
@@ -11,6 +12,7 @@ let shader;
 let vao, vbo, tbo, nbo, ibo;
 
 let texture;
+let light;
 
 let projectionMatrix;
 let transformationMatrix;
@@ -168,6 +170,7 @@ function init(){
 		transformationMatrix.translate(0, 0, 0);
 
 		texture = new Texture(wGL, "block.png")
+		light = new Light(5.0, new Vec3(0, 0, 0), new Color4(0.6, 0.8, 0.9));
 
 		loop()
 	}
@@ -196,6 +199,8 @@ function render() {
 
 	shader.setMatrixUniform("projectionMatrix", projectionMatrix);
 	shader.setMatrixUniform("transformationMatrix", transformationMatrix);
+
+	shader.setLightUniform("light", light);
 
 	texture.bind()
 

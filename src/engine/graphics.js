@@ -41,6 +41,13 @@ export class Shader {
   		gl.uniformMatrix4fv(uniform, false, new Float32Array(mat.flatten()))
 	}
 
+	setLightUniform(location, light){
+		let gl = this.webGL.getContext();
+  		gl.uniform1f(gl.getUniformLocation(this.program, location + ".intensity"), light.intensity);
+		gl.uniform3f(gl.getUniformLocation(this.program, location + ".position"), light.position.x, light.position.y, light.position.z);
+		gl.uniform4f(gl.getUniformLocation(this.program, location + ".color"), light.color.r, light.color.g, light.color.b, light.color.a);
+	}
+
 	getProgram() {
 		return this.program
 	}
