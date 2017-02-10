@@ -197,12 +197,12 @@ function update () {
 	transformationMatrix = new Mat4();
 	transformationMatrix.scale(1, 1, 1);
 	transformationMatrix.rotate(up, up, 0);
-	transformationMatrix.translate(-1.5, 0.0, 5);
+	transformationMatrix.translate(1.5 * Math.cos(up), 1.5 * Math.sin(up), 5);
 
 	transformationMatrix1 = new Mat4();
 	transformationMatrix1.scale(1, 1, 1);
 	transformationMatrix1.rotate(-up, -up, 0);
-	transformationMatrix1.translate(1.5, 0.0, 5);
+	transformationMatrix1.translate(- 1.5 * Math.cos(up), - 1.5 * Math.sin(up), 5);
 }
 
 function render() {
