@@ -12,10 +12,10 @@ let shader;
 let vao, vbo, tbo, nbo, ibo;
 
 let texture;
-let light;
+let lights = [];
 
 let projectionMatrix;
-let transformationMatrix;
+let transformationMatrix, transformationMatrix1, transformationMatrix2;
 
 let up = 0;
 
@@ -83,36 +83,38 @@ const normals = [
 	1, 0, 0,
 ]
 
+const unit = (1 / (256 / 16));
+
 const textures = [
-	0.0,	1.0,
-	0.0,	0.0,
-	1.0,	0.0,
-	1.0,	1.0,
+	unit * 3,	unit,
+	unit * 3,	0.0,
+	unit * 4,	0.0,
+	unit * 4,	unit,
 
-	1.0,	1.0,
-	1.0,	0.0,
-	0.0,	0.0,
-	0.0,	1.0,
+	unit * 3,	unit,
+	unit * 3,	0.0,
+	unit * 4,	0.0,
+	unit * 4,	unit,
 
-	1.0,	1.0,
-	1.0,	0.0,
-	0.0,	0.0,
-	0.0,	1.0,
+	unit * 3,	unit,
+	unit * 3,	0.0,
+	unit * 2,	0.0,
+	unit * 2,	unit,
 
-	0.0,	1.0,
+	0.0,	unit,
 	0.0,	0.0,
-	1.0,	0.0,
-	1.0,	1.0,
+	unit,	0.0,
+	unit,	unit,
 
-	1.0,	1.0,
-	0.0,	1.0,
-	0.0,	0.0,
-	1.0,	0.0,
+	unit * 4,	unit,
+	unit * 3,	unit,
+	unit * 3,	0.0,
+	unit * 4,	0.0,
 
-	0.0,	1.0,
-	1.0,	1.0,
-	1.0,	0.0,
-	0.0,	0.0,
+	unit * 3,	unit,
+	unit * 4,	unit,
+	unit * 4,	0.0,
+	unit * 3,	0.0,
 ];
 
 const indices = [
@@ -167,10 +169,17 @@ function init(){
 		transformationMatrix = new Mat4();
 		transformationMatrix.scale(1, 1, 1);
 		transformationMatrix.rotate(0, 0, 0);
-		transformationMatrix.translate(0, 0, 0);
+		transformationMatrix.translate(-1.5, 0.0, 5);
 
-		texture = new Texture(wGL, "block.png")
-		light = new Light(5.0, new Vec3(0, 0, 0), new Color4(0.6, 0.8, 0.9));
+		transformationMatrix1 = new Mat4();
+		transformationMatrix1.scale(1, 1, 1);
+		transformationMatrix1.rotate(0, 0, 0);
+		transformationMatrix1.translate(1.5, 0.0, 5);
+
+		texture = new Texture(wGL, "terrain.png")
+		lights[0] = new Light(5.0, new Vec3(0, 0, 0), new Color4(1.0, 1.0, 1.0, 1.0));
+		lights[1] = new Light(100.0, new Vec3(10, 100, 0), new Color4(1.0, 0.9, 0.8, 1.0));
+		//lights[2] = new Light(3.0, new Vec3(-5, 0, 5), new Color4(1.0, 1.0, 1.0, 1.0));
 
 		loop()
 	}
@@ -188,7 +197,12 @@ function update () {
 	transformationMatrix = new Mat4();
 	transformationMatrix.scale(1, 1, 1);
 	transformationMatrix.rotate(up, up, 0);
-	transformationMatrix.translate(0, 0, 5);
+	transformationMatrix.translate(-1.5, 0.0, 5);
+
+	transformationMatrix1 = new Mat4();
+	transformationMatrix1.scale(1, 1, 1);
+	transformationMatrix1.rotate(-up, -up, 0);
+	transformationMatrix1.translate(1.5, 0.0, 5);
 }
 
 function render() {
@@ -198,15 +212,26 @@ function render() {
 	gl.useProgram(shader.getProgram());
 
 	shader.setMatrixUniform("projectionMatrix", projectionMatrix);
-	shader.setMatrixUniform("transformationMatrix", transformationMatrix);
 
-	shader.setLightUniform("light", light);
+	for(let i = 0; i < 2; i++)
+		shader.setLightUniform("light[" + i + "]", lights[i]);
 
 	texture.bind()
 
+	shader.setMatrixUniform("transformationMatrix", transformationMatrix);
 	gl.bindVertexArray(vao);
 	gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_INT, 0);
 	gl.bindVertexArray(null);
+
+	shader.setMatrixUniform("transformationMatrix", transformationMatrix1);
+	gl.bindVertexArray(vao);
+	gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_INT, 0);
+	gl.bindVertexArray(null);
+
+	// shader.setMatrixUniform("transformationMatrix", transformationMatrix2);
+	// gl.bindVertexArray(vao);
+	// gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_INT, 0);
+	// gl.bindVertexArray(null);
 }
 
 window.onload = init();
