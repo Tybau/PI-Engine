@@ -10,8 +10,6 @@ let wGL;
 let gl;
 let shader;
 
-let texture;
-
 let quad;
 
 function init(){
@@ -20,6 +18,7 @@ function init(){
 	if (gl) {
 		shader = new Shader(wGL, vertex, fragment);
 		shader.setMatrixUniform("projectionMatrix",  new Mat4().ortho(0, canvas.width, canvas.height, 0, -1, 1));
+		
 
 		quad = new Quad(wGL, "block.png");
 		quad.scale.x = 400;
@@ -44,8 +43,6 @@ function update () {
 function render() {
 	gl.clearColor(0.0, 0.0, 0.0, 1.0);
 	gl.clear(gl.COLOR_BUFFER_BIT);
-
-	gl.useProgram(shader.getProgram());
 
 	quad.render(gl, shader);
 }
