@@ -1,4 +1,5 @@
 import {Mat4, Vec3} from './maths.js'
+import {Texture} from './graphics.js'
 
 const vertices = [
 	-0.5,	-0.5,
@@ -20,7 +21,10 @@ const indices = [
 
 
 export class Quad {
-	constructor (gl) {
+	constructor (webGL, texture) {
+		let gl = webGL.getContext();
+		this.texture = new Texture(webGL, texture);
+
 		this.pos = new Vec3(0, 0, 0);
 		this.rot = new Vec3(0, 0, 0);
 		this.scale = new Vec3(1, 1, 1);
@@ -56,6 +60,8 @@ export class Quad {
 		transformationMatrix.scale(this.scale.x, this.scale.y, this.scale.z);
 		transformationMatrix.rotate(this.rot.x, this.rot.y, this.rot.z);
 		transformationMatrix.translate(this.pos.x, this.pos.y, this.pos.z);
+
+		this.texture.bind();
 
 		shader.setMatrixUniform("transformationMatrix", transformationMatrix);
 		gl.bindVertexArray(this.vao);
