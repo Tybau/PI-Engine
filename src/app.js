@@ -10,7 +10,7 @@ let wGL;
 let gl;
 let shader;
 
-let quad;
+let quad, cafe;
 
 function init(){
 	wGL = new WebGL(canvas);
@@ -20,9 +20,10 @@ function init(){
 		shader.setMatrixUniform("projectionMatrix",  new Mat4().ortho(0, canvas.width, canvas.height, 0, -1, 1));
 		
 		quad = new Quad(wGL, "block.png");
-		quad.scale.x = 400;
-		quad.scale.y = 400;
-		quad.scale.z = 400;
+		quad.setScale(400, 400);
+
+		cafe = new Quad(wGL, "cafe.png");
+		cafe.setScale(200, 200);
 
 		loop()
 	}
@@ -44,6 +45,7 @@ function render() {
 	gl.clear(gl.COLOR_BUFFER_BIT);
 
 	quad.render(gl, shader);
+	cafe.render(gl, shader);
 }
 
 window.onload = init();

@@ -30,6 +30,9 @@ export class Shader {
 		gl.attachShader(this.program, this.fragmentShader)
 		gl.linkProgram(this.program)
 
+		gl.enable(gl.BLEND);
+		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
 		if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) {
 			console.error("Unable to initialize the shader program: " + gl.getProgramInfoLog(shader))
 		}
@@ -41,13 +44,6 @@ export class Shader {
 		let gl = this.webGL.getContext()
 		var uniform = gl.getUniformLocation(this.program, location)
   		gl.uniformMatrix4fv(uniform, false, new Float32Array(mat.flatten()))
-	}
-
-	setLightUniform(location, light){
-		let gl = this.webGL.getContext();
-  		gl.uniform1f(gl.getUniformLocation(this.program, location + ".intensity"), light.intensity);
-		gl.uniform3f(gl.getUniformLocation(this.program, location + ".position"), light.position.x, light.position.y, light.position.z);
-		gl.uniform4f(gl.getUniformLocation(this.program, location + ".color"), light.color.r, light.color.g, light.color.b, light.color.a);
 	}
 
 	getProgram() {

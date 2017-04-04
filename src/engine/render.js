@@ -68,4 +68,25 @@ export class Quad {
 		gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_INT, 0);
 		gl.bindVertexArray(null);
 	}
+
+	setScale(width, height)
+	{
+		this.scale.x = width;
+		this.scale.y = height;
+		this.scale.z = 1;
+	}
+
+	setRotation(a)
+	{
+		this.rot.x = 0;
+		this.rot.y = 0;
+		this.rot.z = a;
+	}
+
+	setPosition(x, y)
+	{
+		this.pos.x = x;
+		this.pos.y = y;
+		this.pos.z = 0;
+	}
 }
