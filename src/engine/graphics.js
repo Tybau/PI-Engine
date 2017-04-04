@@ -1,3 +1,5 @@
+import {Mat4} from './maths.js'
+
 export class WebGL {
 	constructor(canvas) {
 		this.gl = null;
