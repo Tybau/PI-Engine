@@ -19,7 +19,7 @@ function init(){
 		shader = new Shader(wGL, vertex, fragment);
 		shader.setMatrixUniform("projectionMatrix",  new Mat4().ortho(0, canvas.width, canvas.height, 0, -1, 1));
 		
-		quad = new Quad(wGL, "block.png");
+		quad = new Quad(wGL, "cafe.png");
 		quad.setScale(100, 100);
 
 		circle = new Circle(wGL, "block.png", 32);
@@ -37,8 +37,12 @@ function loop()
 	render();
 }
 
+let t = 0;
+
 function update () {
-	
+	t += 0.01;
+
+	circle.setPosition(Math.cos(t) * 200, Math.sin(t) * 200)
 }
 
 function render() {
