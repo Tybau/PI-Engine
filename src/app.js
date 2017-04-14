@@ -1,6 +1,6 @@
 import {WebGL, Shader} from './engine/graphics.js'
 import {Mat4} from './engine/maths.js'
-import {Quad} from './engine/render.js'
+import {Quad, Circle} from './engine/shapes.js'
 
 import vertex from './shaders/main.vert'
 import fragment from './shaders/main.frag'
@@ -10,7 +10,7 @@ let wGL;
 let gl;
 let shader;
 
-let quad, cafe;
+let quad, circle;
 
 function init(){
 	wGL = new WebGL(canvas);
@@ -20,10 +20,11 @@ function init(){
 		shader.setMatrixUniform("projectionMatrix",  new Mat4().ortho(0, canvas.width, canvas.height, 0, -1, 1));
 		
 		quad = new Quad(wGL, "block.png");
-		quad.setScale(400, 400);
+		quad.setScale(100, 100);
 
-		cafe = new Quad(wGL, "cafe.png");
-		cafe.setScale(200, 200);
+		circle = new Circle(wGL, "block.png", 32);
+		circle.setScale(150, 150);
+		circle.setPosition(200, 200);
 
 		loop()
 	}
@@ -44,8 +45,8 @@ function render() {
 	gl.clearColor(0.0, 0.0, 0.0, 1.0);
 	gl.clear(gl.COLOR_BUFFER_BIT);
 
-	quad.render(gl, shader);
-	cafe.render(gl, shader);
+	quad.render(shader);
+	circle.render(shader);
 }
 
 window.onload = init();
