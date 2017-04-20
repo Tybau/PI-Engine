@@ -27,6 +27,8 @@ export class Shape {
 		let gl = this.gl;
 		let transformationMatrix = new Mat4();
 
+		shader.bind()
+
 		transformationMatrix.scale(this.scale.x, this.scale.y, this.scale.z);
 		transformationMatrix.rotate(this.rot.x, this.rot.y, this.rot.z);
 		transformationMatrix.translate(this.pos.x, this.pos.y, this.pos.z);
