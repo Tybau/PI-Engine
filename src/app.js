@@ -12,7 +12,7 @@ let shader;
 
 let quad, circle;
 
-function init(){
+function init () {
 	wGL = new WebGL(canvas);
 	gl = wGL.getContext();
 	if (gl) {
@@ -22,16 +22,15 @@ function init(){
 		quad = new Quad(wGL, "cafe.png");
 		quad.setScale(100, 100);
 
-		circle = new Circle(wGL, "block.png", 32);
+		circle = new Circle(wGL, "block.png");
 		circle.setScale(150, 150);
-		circle.setPosition(200, 200);
+        circle.setPosition(200, 200);
 
-		loop()
+		loop();
 	}
 }
 
-function loop()
-{
+function loop () {
 	window.requestAnimationFrame(loop, canvas);
 	update();
 	render();
@@ -45,7 +44,7 @@ function update () {
 	circle.setPosition(Math.cos(t) * 200, Math.sin(t) * 200)
 }
 
-function render() {
+function render () {
 	gl.clearColor(0.0, 0.0, 0.0, 1.0);
 	gl.clear(gl.COLOR_BUFFER_BIT);
 

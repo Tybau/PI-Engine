@@ -20,27 +20,10 @@ export class Shape {
 		this.tbo = gl.createBuffer();
 		this.ibo = gl.createBuffer();
 
-		gl.bindVertexArray(this.vao);
-
-			gl.enableVertexAttribArray(0);
-			gl.enableVertexAttribArray(1);
-
-			gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
-			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
-			gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
-
-			gl.bindBuffer(gl.ARRAY_BUFFER, this.tbo);
-			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.textures), gl.STATIC_DRAW);
-			gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 0, 0);
-
-			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.ibo);
-			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(this.indices), gl.STATIC_DRAW);
-
-		gl.bindVertexArray(null);
+		this.generateVao();
 	}
 
-	render(shader)
-	{
+	render(shader) {
 		let gl = this.gl;
 		let transformationMatrix = new Mat4();
 
@@ -56,25 +39,41 @@ export class Shape {
 		gl.bindVertexArray(null);
 	}
 
-	setScale(width, height)
-	{
+	setScale (width, height) {
 		this.scale.x = width;
 		this.scale.y = height;
 		this.scale.z = 1;
 	}
 
-	setRotation(a)
-	{
+	setRotation (a) {
 		this.rot.x = 0;
 		this.rot.y = 0;
 		this.rot.z = a;
 	}
 
-	setPosition(x, y)
-	{
+	setPosition (x, y) {
 		this.pos.x = x;
 		this.pos.y = y;
 		this.pos.z = 0;
+	}
+
+	generateVao () {
+		let gl = this.gl;
+		gl.bindVertexArray(this.vao);
+			gl.enableVertexAttribArray(0);
+			gl.enableVertexAttribArray(1);
+
+			gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
+			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
+			gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+
+			gl.bindBuffer(gl.ARRAY_BUFFER, this.tbo);
+			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.textures), gl.STATIC_DRAW);
+			gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 0, 0);
+
+			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.ibo);
+			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(this.indices), gl.STATIC_DRAW);
+		gl.bindVertexArray(null);
 	}
 }
 
@@ -102,30 +101,37 @@ export class Quad extends Shape{
 	}
 }
 
-export class Circle extends Shape{
-	constructor (webGL, texture, edge_count) {
+export class Circle extends Shape {
+	constructor (webGL, texture) {
+		let vertices = [0, 0];
+		let textures = [0.5, 0.5];
+		let indices = [];
+
+		tesselateCircle (vertices, textures, indices, 1, 1);
+
+		super(webGL, texture, vertices, textures, indices);
+	}
+
+	setScale (width, height) {
+		super.setScale(width, height);
 
 		let vertices = [0, 0];
 		let textures = [0.5, 0.5];
 		let indices = [];
 
-		for (let i = 0; i < edge_count; i++) {
-			addCircleVertex(vertices, textures, i, edge_count);
+		let edge_count = 2 * Math.PI * Math.sqrt((1 / 2) * (width * width + height * height));
 
-			indices.push(0);
-			indices.push(i);
-			indices.push(i+1);
-		}
-		// last triangle
-		indices.push(0);
-		indices.push(edge_count);
-		indices.push(1);
+		tesselateCircle (vertices, textures, indices, width, height);
 
-		super(webGL, texture, vertices, textures, indices);
+		this.indices = indices;
+		this.textures = textures;
+		this.vertices = vertices;
+
+		this.generateVao();
 	}
 }
 
-function addCircleVertex(vertices, textures, i, edge_count) {
+function addCircleVertex (vertices, textures, i, edge_count) {
 	let t = i * (2 * Math.PI / edge_count);
 	let x = Math.cos(t);
 	let y = Math.sin(t);
@@ -135,4 +141,20 @@ function addCircleVertex(vertices, textures, i, edge_count) {
 
 	textures.push(x * 0.5 + 0.5);
 	textures.push(y * 0.5 + 0.5);
+}
+
+function tesselateCircle (vertices, textures, indices, width, height) {
+	let edge_count = 2 * Math.PI * Math.sqrt((1 / 2) * (width * width + height * height));
+
+	for (let i = 0; i < edge_count; i++) {
+		addCircleVertex(vertices, textures, i, edge_count);
+
+		indices.push(0);
+		indices.push(i);
+		indices.push(i+1);
+	}
+	// last triangle
+	indices.push(0);
+	indices.push(edge_count);
+	indices.push(1);
 }

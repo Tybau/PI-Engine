@@ -22,8 +22,8 @@ export class Shader {
 		this.webGL = webGL;
 		let gl = webGL.getContext()
 
-		this.fragmentShader = getShader(gl, 'fs', fragment)
-		this.vertexShader = getShader(gl, 'vs', vertex)
+		this.fragmentShader = getShader(gl, gl.FRAGMENT_SHADER, fragment)
+		this.vertexShader = getShader(gl, gl.VERTEX_SHADER, vertex)
 
 		this.program = gl.createProgram()
 		gl.attachShader(this.program, this.vertexShader)
@@ -84,21 +84,14 @@ export class Texture {
 
 /* internal functions */
 
-let getShader = function(gl, type, shaderFile) {
+function getShader(gl, shaderType, shaderCode) {
 	let shader;
-	if (!shaderFile)
+	if (!shaderCode || !shaderType)
 		return null;
 
-	if (type === 'fs'){
-		shader = gl.createShader(gl.FRAGMENT_SHADER);
-	}else if(type === 'vs'){
-		shader = gl.createShader(gl.VERTEX_SHADER);
-	}else{
-		console.error("Unknown shader type !");
-		return null;
-	}
+	shader = gl.createShader(shaderType);
 
-	gl.shaderSource(shader, shaderFile);
+	gl.shaderSource(shader, shaderCode);
 	gl.compileShader(shader);
 
 	if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
