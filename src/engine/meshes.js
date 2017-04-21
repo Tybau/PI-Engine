@@ -196,3 +196,74 @@ export class Box extends Mesh{
 		super(webGL, texture, vertices, textures, normals, indices);
 	}
 }
+
+export class Model extends Mesh {
+	constructor (webGL, modelCode, texture) {
+		let vertices = [];
+		let normals = [];
+		let textures = [];
+		let indices = [];
+
+		let lines = modelCode.split('\n');
+
+		let loaded_vertices = [];
+		let loaded_textures = [];
+		let loaded_normals = [];
+		let loaded_indices = [];
+
+		let verticesSize = 0;
+		let normalsSize = 0;
+		let uvSize = 0;
+
+		for(let i = 0; i < lines.length; i++) {
+			let line = lines[i];
+			let args = line.split(' ');
+			
+			if(args[0] === "v") {
+				loaded_vertices.push(parseFloat(args[1]));
+				loaded_vertices.push(parseFloat(args[2]));
+				loaded_vertices.push(parseFloat(args[3]));
+				verticesSize ++;
+			}else if(args[0] === "vn") {
+				loaded_normals.push(parseFloat(args[1]));
+				loaded_normals.push(parseFloat(args[2]));
+				loaded_normals.push(parseFloat(args[3]));
+				normalsSize ++;
+			}else if(args[0] === "vt") {
+				loaded_textures.push(parseFloat(args[1]));
+				loaded_textures.push(parseFloat(args[2]));
+				uvSize ++;
+			}else if(args[0] === "f") {
+				let indides_a = args[1].split('/');
+				let indides_b = args[2].split('/');
+				let indides_c = args[3].split('/');
+
+				let a = new Vec3(parseInt(indides_a[0]) - 1, parseInt(indides_a[1]) - 1, parseInt(indides_a[2]) - 1);
+				let b = new Vec3(parseInt(indides_b[0]) - 1, parseInt(indides_b[1]) - 1, parseInt(indides_b[2]) - 1);
+				let c = new Vec3(parseInt(indides_c[0]) - 1, parseInt(indides_c[1]) - 1, parseInt(indides_c[2]) - 1);
+				
+				loaded_indices.push(a);
+				loaded_indices.push(b);
+				loaded_indices.push(c);
+			}
+		}
+
+		for(let i = 0; i < loaded_indices.length; i++) {
+			let index = loaded_indices[i];
+
+			vertices.push(loaded_vertices[index.x * 3 + 0]);
+			vertices.push(loaded_vertices[index.x * 3 + 1]);
+			vertices.push(loaded_vertices[index.x * 3 + 2]);
+
+			textures.push(loaded_textures[index.y * 2 + 0]);
+			textures.push(loaded_textures[index.y * 2 + 1]);
+
+			normals.push(loaded_normals[index.z * 3 + 0]);
+			normals.push(loaded_normals[index.z * 3 + 1]);
+			normals.push(loaded_normals[index.z * 3 + 2]);
+
+			indices.push(i);
+		}
+		super(webGL, texture, vertices, textures, normals, indices);
+	}
+}

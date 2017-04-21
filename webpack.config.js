@@ -24,6 +24,9 @@ module.exports = {
 				test : /\.(frag|vert)$/,
 				loader : 'webpack-glsl'
 			},{
+				test : /\.(obj)$/,
+				loader : 'webpack-glsl'
+			},{
 				test : /\.(jpg|png|gif|svg)$/,
 				loader : 'image-webpack'
 			}

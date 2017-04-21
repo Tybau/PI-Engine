@@ -1,7 +1,7 @@
 import {WebGL, Shader} from './engine/graphics.js'
 import {Mat4} from './engine/maths.js'
 import {Quad, Circle} from './engine/shapes.js'
-import {Box, Quad3D} from './engine/meshes.js'
+import {Box, Model} from './engine/meshes.js'
 
 import v_2d from './shaders/main_2d.vert'
 import f_2d from './shaders/main_2d.frag'
@@ -9,13 +9,15 @@ import f_2d from './shaders/main_2d.frag'
 import v_3d from './shaders/main_3d.vert'
 import f_3d from './shaders/main_3d.frag'
 
+import earth from '../assets/models/earth.obj'
+
 let canvas = document.querySelector('#glcanvas');
 let wGL;
 let gl;
 let s2d, s3d;
 
 let quad, circle;
-let box;
+let box, model;
 
 function init () {
 	wGL = new WebGL(canvas);
@@ -38,9 +40,13 @@ function init () {
         circle.setPosition(200, 200);
 
 		box = new Box(wGL, "block.png");
-		box.setPosition(1, 0, 3);
+		box.setPosition(1.5, 0, 2);
 		box.setRotation(0, 0, 0);
-		box.setScale(1, 1, 1);
+		box.setScale(0.2, 0.2, 0.2);
+
+		model = new Model(wGL, earth, "earth.jpg");
+		model.setPosition(0, 0, 2);
+		model.setScale(2, 2, 2);
 
 		loop();
 	}
@@ -61,6 +67,8 @@ function update () {
 	circle.setScale(100 + 50 * Math.sin(t), 100 + 50 * Math.sin(t));
 	circle.setRotation(t);
 
+	model.setRotation(Math.PI, t, 0.401426);
+
 	box.setRotation(t, t, t);
 }
 
@@ -71,11 +79,12 @@ function render () {
 	gl.enable(gl.DEPTH_TEST);
 
 	box.render(s3d);
+	model.render(s3d);
 
 	gl.disable(gl.DEPTH_TEST);
 
 	quad.render(s2d);
-	circle.render(s2d);
+	circle.render(s2d)
 }
 
 window.onload = init();
