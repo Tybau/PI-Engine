@@ -43,6 +43,12 @@ export class Shader {
   		gl.uniformMatrix4fv(uniform, false, new Float32Array(mat.flatten()))
 	}
 
+	setIntegerUniform(location, i){
+		let gl = this.webGL.getContext()
+		var uniform = gl.getUniformLocation(this.program, location)
+  		gl.uniform1i(uniform, i)
+	}
+
 	bind() {
 		let gl = this.webGL.getContext()
 		gl.useProgram(this.program)

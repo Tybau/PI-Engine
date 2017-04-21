@@ -9,6 +9,7 @@ import f_2d from './shaders/main_2d.frag'
 import v_3d from './shaders/main_3d.vert'
 import f_3d from './shaders/main_3d.frag'
 
+import cube from '../assets/models/cube.obj'
 import earth from '../assets/models/earth.obj'
 
 let canvas = document.querySelector('#glcanvas');
@@ -34,17 +35,18 @@ function init () {
 
 		quad = new Quad(wGL, "cafe.png");
 		quad.setScale(100, 100);
+		quad.setPosition(-500, 0);
 
 		circle = new Circle(wGL, "block.png");
 		circle.setScale(50, 50);
-        circle.setPosition(200, 200);
+        circle.setPosition(-500, -300);
 
-		box = new Box(wGL, "block.png");
+		box = new Model(wGL, cube, "block.png", "normal.png");
+		box.setScale(0.25, 0.25, 0.25);
 		box.setPosition(1.5, 0, 2);
-		box.setRotation(0, 0, 0);
-		box.setScale(0.2, 0.2, 0.2);
+		
 
-		model = new Model(wGL, earth, "earth.jpg");
+		model = new Model(wGL, earth, "block.png", "normal.png");
 		model.setPosition(0, 0, 2);
 		model.setScale(2, 2, 2);
 
@@ -61,11 +63,7 @@ function loop () {
 let t = 0;
 
 function update () {
-	t += 0.01;
-
-	circle.setPosition(Math.cos(t) * 200, Math.sin(t) * 200);
-	circle.setScale(100 + 50 * Math.sin(t), 100 + 50 * Math.sin(t));
-	circle.setRotation(t);
+	t += 0.002;
 
 	model.setRotation(Math.PI, t, 0.401426);
 

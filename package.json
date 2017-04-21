@@ -4,7 +4,7 @@
   "description": "Hello World",
   "main": "webpack.config.js",
   "scripts": {
-    "start": "webpack-dev-server --inline --data-content ./"
+    "start": "webpack-dev-server --inline --data-content ./ --port=3000 --host=0.0.0.0"
   },
   "author": "Tybau",
   "license": "ISC",

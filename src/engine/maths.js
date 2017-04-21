@@ -135,7 +135,7 @@ export class Vec3{
 		return new Vec3(this.x, this.y, this.z);
 	}
 	length(){
-		return Math.sqrt(x * x + y * y + z * z);
+		return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
 	}
 	normalize(){
 		return this.div(this.length());
@@ -144,6 +144,12 @@ export class Vec3{
 		this.x += v.x;
 		this.y += v.y;
 		this.z += v.z;
+		return this;
+	}
+	subVector(v){
+		this.x -= v.x;
+		this.y -= v.y;
+		this.z -= v.z;
 		return this;
 	}
 	mul(v){
@@ -170,6 +176,48 @@ export class Vec3{
 	}
 	getArray(){
 		return [this.x, this.y, this.z];
+	}
+}
+
+export class Vec2{
+	constructor(x, y){
+		this.x = x;
+		this.y = y;
+	}
+	copy(){
+		return new Vec3(this.x, this.y);
+	}
+	length(){
+		return Math.sqrt(this.x * this.x + this.y * this.y);
+	}
+	normalize(){
+		return this.div(this.length());
+	}
+	addVector(v){
+		this.x += v.x;
+		this.y += v.y;
+		return this;
+	}
+	subVector(v){
+		this.x -= v.x;
+		this.y -= v.y;
+		return this;
+	}
+	mul(v){
+		this.x *= v;
+		this.y *= v;
+		return this;
+	}
+	div(v){
+		this.x /= v;
+		this.y /= v;
+		return this;
+	}
+	dot(v){
+		return this.x * v.x + this.y * v.y;
+	}
+	getArray(){
+		return [this.x, this.y];
 	}
 }
 
