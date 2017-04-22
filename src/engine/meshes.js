@@ -1,15 +1,15 @@
-import {Mat4, Vec3, Vec2} from './maths.js'
+import {Mat4, Vec3, Vec2, Color4} from './maths.js'
 import {Texture} from './graphics.js'
 
 export class Mesh {
-	constructor (webGL, texture, normalMap, vertices, textures, normals, tangents, indices) {
+	constructor (webGL, texture, normalMap, vertices, uvs, normals, tangents, indices) {
 		let gl = webGL.getContext();
 		this.gl = gl;
 		this.texture = new Texture(webGL, texture);
 		this.normalMap = new Texture(webGL, normalMap);
 
 		this.vertices = vertices;
-		this.textures = textures;
+		this.uvs = uvs;
 		this.normals = normals;
 		this.tangents = tangents;
 		this.indices = indices;
@@ -26,18 +26,21 @@ export class Mesh {
 		this.ibo = gl.createBuffer();
 
 		this.generateVao();
+		this.resetTransformationMatrix();
+
+		this.modified = false;
+
+		this.debugLine = new Line(this.gl);
 	}
 
 	render(shader) {
 		let gl = this.gl;
-		let transformationMatrix = new Mat4();
+
+		if(this.modified) this.resetTransformationMatrix();
 
 		shader.bind();
 
-		transformationMatrix.scale(this.scale.x, this.scale.y, this.scale.z);
-		transformationMatrix.rotate(this.rot.x, this.rot.y, this.rot.z);
-		transformationMatrix.translate(this.pos.x, this.pos.y, this.pos.z);
-
+		if(this)
 
 		gl.activeTexture(gl.TEXTURE0);
 		shader.setIntegerUniform("tex", 0);
@@ -47,7 +50,7 @@ export class Mesh {
 		shader.setIntegerUniform("normalMap", 1);
 		this.normalMap.bind();
 
-		shader.setMatrixUniform("transformationMatrix", transformationMatrix);
+		shader.setMatrixUniform("transformationMatrix", this.transformationMatrix);
 		gl.bindVertexArray(this.vao);
 		gl.drawElements(gl.TRIANGLES, this.indices.length, gl.UNSIGNED_INT, 0);
 		gl.bindVertexArray(null);
@@ -55,22 +58,72 @@ export class Mesh {
 		gl.activeTexture(gl.TEXTURE0);
 	}
 
+	renderDebug (shader, ignore) {
+		let line = this.debugLine;
+		shader.bind();
+
+		for(let i = 0; i < this.vertices.length; i += 3 * ignore) {
+
+			let p = new Vec3(this.vertices[i], this.vertices[i + 1], this.vertices[i + 2]);
+			let n = new Vec3(this.normals[i], this.normals[i + 1], this.normals[i + 2]);
+			let t = new Vec3(this.tangents[i], this.tangents[i + 1], this.tangents[i + 2]);
+
+			let mat = new Mat4()
+				.translate(p.x, p.y, p.z)
+				.mul(this.transformationMatrix);
+
+			shader.setMatrixUniform('transformationMatrix', mat);
+			shader.setVec3Uniform("vector", n);
+			shader.setColor4Uniform("color", new Color4(1.0, 0.0, 0.0, 1.0));
+
+			line.render(shader);
+
+			shader.setMatrixUniform('transformationMatrix', mat);
+			shader.setVec3Uniform("vector", t);
+			shader.setColor4Uniform("color", new Color4(1.0, 1.0, 0.0, 1.0));
+			
+			line.render(shader);
+
+			shader.setMatrixUniform('transformationMatrix', mat);
+			shader.setVec3Uniform("vector", t.copy().cross(n));
+			shader.setColor4Uniform("color", new Color4(0.0, 1.0, 0.0, 1.0));
+			
+			line.render(shader);
+		}
+	}
+
 	setScale (width, height, depth) {
 		this.scale.x = width;
 		this.scale.y = height;
 		this.scale.z = depth;
+
+		this.modified = true;
 	}
 
 	setRotation (rx, ry, rz) {
 		this.rot.x = rx;
 		this.rot.y = ry;
 		this.rot.z = rz;
+
+		this.modified = true;
 	}
 
 	setPosition (x, y, z) {
 		this.pos.x = x;
 		this.pos.y = y;
 		this.pos.z = z;
+
+		this.modified = true;
+	}
+
+	resetTransformationMatrix () {
+		let transformationMatrix = new Mat4();
+
+		transformationMatrix.scale(this.scale.x, this.scale.y, this.scale.z);
+		transformationMatrix.rotate(this.rot.x, this.rot.y, this.rot.z);
+		transformationMatrix.translate(this.pos.x, this.pos.y, this.pos.z);
+
+		this.transformationMatrix = transformationMatrix;
 	}
 
 	generateVao () {
@@ -86,7 +139,7 @@ export class Mesh {
 			gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
 
 			gl.bindBuffer(gl.ARRAY_BUFFER, this.tbo);
-			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.textures), gl.STATIC_DRAW);
+			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.uvs), gl.STATIC_DRAW);
 			gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 0, 0);
 
 			gl.bindBuffer(gl.ARRAY_BUFFER, this.nbo);
@@ -172,7 +225,7 @@ export class Box extends Mesh{
 			1, 0, 0
 		];
 
-		let textures = [
+		let uvs = [
 			0.0,	1.0,
 			0.0,	0.0,
 			1.0,	0.0,
@@ -245,7 +298,39 @@ export class Box extends Mesh{
 			0.0,	-1.0,	0.0,			
 		];
 
-		super(webGL, texture, normalMap, vertices, textures, normals, tangents, indices);
+		super(webGL, texture, normalMap, vertices, uvs, normals, tangents, indices);
+	}
+}
+
+export class Line {
+	constructor (gl) {
+		this.gl = gl;
+		this.vertices = [0.0, 0.0, 0.0, 1.0, 1.0, 1.0];
+		this.indices = [0, 1];
+
+		this.vao = gl.createVertexArray();
+		this.vbo = gl.createBuffer();
+		this.ibo = gl.createBuffer();
+
+		gl.bindVertexArray(this.vao);
+			gl.enableVertexAttribArray(0);
+
+			gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
+			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
+			gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+
+			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.ibo);
+			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(this.indices), gl.STATIC_DRAW);
+		gl.bindVertexArray(null);
+	}
+
+	render (shader) {
+		let gl = this.gl;
+
+		shader.bind();
+		gl.bindVertexArray(this.vao);
+		gl.drawElements(gl.LINES, this.indices.length, gl.UNSIGNED_INT, 0);
+		gl.bindVertexArray(null);
 	}
 }
 
@@ -254,13 +339,13 @@ export class Model extends Mesh {
 		let vertices = [];
 		let normals = [];
 		let tangents = [];
-		let textures = [];
+		let uvs = [];
 		let indices = [];
 
 		let lines = modelCode.split('\n');
 
 		let loaded_vertices = [];
-		let loaded_textures = [];
+		let loaded_uvs = [];
 		let loaded_normals = [];
 		let loaded_indices = [];
 
@@ -277,8 +362,8 @@ export class Model extends Mesh {
 				loaded_normals.push(parseFloat(args[2]));
 				loaded_normals.push(parseFloat(args[3]));
 			}else if(args[0] === "vt") {
-				loaded_textures.push(parseFloat(args[1]));
-				loaded_textures.push(parseFloat(args[2]));
+				loaded_uvs.push(parseFloat(args[1]));
+				loaded_uvs.push(parseFloat(args[2]));
 			}else if(args[0] === "f") {
 				let indides_a = args[1].split('/');
 				let indides_b = args[2].split('/');
@@ -301,8 +386,8 @@ export class Model extends Mesh {
 			vertices.push(loaded_vertices[index.x * 3 + 1]);
 			vertices.push(loaded_vertices[index.x * 3 + 2]);
 
-			textures.push(loaded_textures[index.y * 2 + 0]);
-			textures.push(loaded_textures[index.y * 2 + 1]);
+			uvs.push(loaded_uvs[index.y * 2 + 0]);
+			uvs.push(loaded_uvs[index.y * 2 + 1]);
 
 			normals.push(loaded_normals[index.z * 3 + 0]);
 			normals.push(loaded_normals[index.z * 3 + 1]);
@@ -312,7 +397,7 @@ export class Model extends Mesh {
 		}
 
 		for(let i = 0; i < normals.length / 3; i += 3) {
-			let tangent = getTangent(i, vertices, textures);
+			let tangent = getTangent(i, vertices, uvs);
 
 			tangents.push(tangent.x);
 			tangents.push(tangent.y);
@@ -326,7 +411,7 @@ export class Model extends Mesh {
 			tangents.push(tangent.y);
 			tangents.push(tangent.z);
 		}
-		super(webGL, texture, normalMap, vertices, textures, normals, tangents, indices);
+		super(webGL, texture, normalMap, vertices, uvs, normals, tangents, indices);
 	}
 }
 
@@ -347,6 +432,12 @@ function getTangent (i, vertices, uvs) {
 	let dUV1 = uv1.subVector(uv0);
 	let dUV2 = uv2.subVector(uv0);
 
-	let r = 1.0 / dUV1.length();
-	return dPos1.mul(dUV2.y).subVector(dPos2.mul(dUV1.y)).mul(r);
+	let divi = dUV1.x * dUV2.y - dUV2.x * dUV1.y;
+	let f = (divi == 0) ? 0.0 : 1.0 / divi;
+
+	return new Vec3(
+		f * (dUV2.y * dPos1.x - dUV1.y * dPos2.x),
+		f * (dUV2.y * dPos1.y - dUV1.y * dPos2.y),
+		f * (dUV2.y * dPos1.z - dUV1.y * dPos2.z)
+	).normalize();
 }

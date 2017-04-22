@@ -37,10 +37,22 @@ export class Shader {
 		gl.useProgram(this.program)
 	}
 
-	setMatrixUniform(location, mat){
+	setMatrixUniform(location, mat) {
 		let gl = this.webGL.getContext()
 		var uniform = gl.getUniformLocation(this.program, location)
   		gl.uniformMatrix4fv(uniform, false, new Float32Array(mat.flatten()))
+	}
+
+	setVec3Uniform(location, vec) {
+		let gl = this.webGL.getContext()
+		var uniform = gl.getUniformLocation(this.program, location)
+  		gl.uniform3f(uniform, vec.x, vec.y, vec.z)
+	}
+
+	setColor4Uniform(location, c) {
+		let gl = this.webGL.getContext()
+		var uniform = gl.getUniformLocation(this.program, location)
+  		gl.uniform4f(uniform, c.r, c.g, c.b, c.a)
 	}
 
 	setIntegerUniform(location, i){
@@ -68,10 +80,8 @@ export class Texture {
 		this.image.onload = () => {
 			gl.bindTexture(gl.TEXTURE_2D, this.id)
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image)
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 			gl.generateMipmap(gl.TEXTURE_2D);
 			gl.bindTexture(gl.TEXTURE_2D, null);
 		}

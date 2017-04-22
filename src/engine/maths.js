@@ -22,7 +22,7 @@ export class Mat4{
 			for(let j = 0; j < 4; j++){
 				tmp[i][j] = 0;
 				for(let k = 0; k < 4; k++)
-					tmp[i][j] += this.matrix[i][k] * mat.matrix[k][j];
+					tmp[i][j] += mat.matrix[i][k] * this.matrix[k][j];
 			}
 		}
 		this.setMatrix(tmp);
@@ -30,11 +30,13 @@ export class Mat4{
 		return this;
 	}
 	translate(x, y, z){
-		this.matrix[0][3] = x;
-		this.matrix[1][3] = y;
-		this.matrix[2][3] = z;
+		let i = new Mat4();
 
-		return this;
+		i.matrix[0][3] = x;
+		i.matrix[1][3] = y;
+		i.matrix[2][3] = z;
+
+		return this.mul(i);
 	}
 	rotateX(a){
 		let i = new Mat4();
@@ -105,6 +107,31 @@ export class Mat4{
         this.matrix[3][2] = -(zFar + zNear) / (zFar - zNear);
 
 		return this;
+	}
+	lookAt(eye, target, up) {
+		let zaxis = target.subVector(eye).normalize();
+    	let xaxis = up.copy().cross(zaxis).normalize();
+    	let yaxis = zaxis.copy().cross(xaxis);
+
+		let i = new Mat4();
+
+		i.matrix[0][0] = xaxis.x;
+		i.matrix[0][1] = yaxis.x;
+		i.matrix[0][2] = zaxis.x;
+
+		i.matrix[1][0] = xaxis.y;
+		i.matrix[1][1] = yaxis.y;
+		i.matrix[1][2] = zaxis.y;
+
+		i.matrix[2][0] = xaxis.z;
+		i.matrix[2][1] = yaxis.z;
+		i.matrix[2][2] = zaxis.z;
+
+		i.matrix[3][0] = -xaxis.dot(eye);
+		i.matrix[3][1] = -yaxis.dot(eye);
+		i.matrix[3][3] = -zaxis.dot(eye);
+
+		return this.mul(i);
 	}
 	flatten(){
 		let res = [];

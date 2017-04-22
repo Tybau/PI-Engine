@@ -2,13 +2,13 @@ import {Mat4, Vec3} from './maths.js'
 import {Texture} from './graphics.js'
 
 export class Shape {
-	constructor (webGL, texture, vertices, textures, indices) {
+	constructor (webGL, texture, vertices, uvs, indices) {
 		let gl = webGL.getContext();
 		this.gl = gl;
 		this.texture = new Texture(webGL, texture);
 
 		this.vertices = vertices;
-		this.textures = textures;
+		this.uvs = uvs;
 		this.indices = indices;
 
 		this.pos = new Vec3(0, 0, 0);
@@ -70,7 +70,7 @@ export class Shape {
 			gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
 
 			gl.bindBuffer(gl.ARRAY_BUFFER, this.tbo);
-			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.textures), gl.STATIC_DRAW);
+			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.uvs), gl.STATIC_DRAW);
 			gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 0, 0);
 
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.ibo);
@@ -88,7 +88,7 @@ export class Quad extends Shape{
 			0.5,	-0.5
 		];
 
-		let textures = [
+		let uvs = [
 			0.0,	0.0,
 			0.0,	1.0,
 			1.0,	1.0,
@@ -99,41 +99,41 @@ export class Quad extends Shape{
 			0, 2, 1, 0, 3, 2
 		];
 
-		super(webGL, texture, vertices, textures, indices);
+		super(webGL, texture, vertices, uvs, indices);
 	}
 }
 
 export class Circle extends Shape {
 	constructor (webGL, texture) {
 		let vertices = [0, 0];
-		let textures = [0.5, 0.5];
+		let uvs = [0.5, 0.5];
 		let indices = [];
 
-		tesselateCircle (vertices, textures, indices, 1, 1);
+		tesselateCircle (vertices, uvs, indices, 1, 1);
 
-		super(webGL, texture, vertices, textures, indices);
+		super(webGL, texture, vertices, uvs, indices);
 	}
 
 	setScale (width, height) {
 		super.setScale(width, height);
 
 		let vertices = [0, 0];
-		let textures = [0.5, 0.5];
+		let uvs = [0.5, 0.5];
 		let indices = [];
 
 		let edge_count = 2 * Math.PI * Math.sqrt((1 / 2) * (width * width + height * height));
 
-		tesselateCircle (vertices, textures, indices, width, height);
+		tesselateCircle (vertices, uvs, indices, width, height);
 
 		this.indices = indices;
-		this.textures = textures;
+		this.uvs = uvs;
 		this.vertices = vertices;
 
 		this.generateVao();
 	}
 }
 
-function addCircleVertex (vertices, textures, i, edge_count) {
+function addCircleVertex (vertices, uvs, i, edge_count) {
 	let t = i * (2 * Math.PI / edge_count);
 	let x = Math.cos(t);
 	let y = Math.sin(t);
@@ -141,15 +141,15 @@ function addCircleVertex (vertices, textures, i, edge_count) {
 	vertices.push(x);
 	vertices.push(y);
 
-	textures.push(x * 0.5 + 0.5);
-	textures.push(y * 0.5 + 0.5);
+	uvs.push(x * 0.5 + 0.5);
+	uvs.push(y * 0.5 + 0.5);
 }
 
-function tesselateCircle (vertices, textures, indices, width, height) {
+function tesselateCircle (vertices, uvs, indices, width, height) {
 	let edge_count = 2 * Math.PI * Math.sqrt((1 / 2) * (width * width + height * height));
 
 	for (let i = 0; i < edge_count; i++) {
-		addCircleVertex(vertices, textures, i, edge_count);
+		addCircleVertex(vertices, uvs, i, edge_count);
 
 		indices.push(0);
 		indices.push(i);
