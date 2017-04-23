@@ -25,6 +25,7 @@ let box, model;
 
 let debug = false;
 let pos = new Vec3(0, 0, 0);
+let rot = new Vec3(0, 0, 0);
 
 function init () {
 	wGL = new WebGL(canvas);
@@ -59,7 +60,6 @@ function init () {
 		model.setPosition(0, 0, 2);
 		model.setScale(1.5, 1.5, 1.5);
 
-
 		loop();
 	}
 }
@@ -87,7 +87,7 @@ function render () {
 	gl.enable(gl.DEPTH_TEST);
 
 	s3d.bind();
-	s3d.setMatrixUniform("viewMatrix", new Mat4().translate(-pos.x, -pos.y, -pos.z));
+	s3d.setMatrixUniform("viewMatrix", new Mat4().translate(-pos.x, -pos.y, -pos.z).rotate(rot.x, rot.y, rot.z));
 
 	box.render(s3d);
 	model.render(s3d);
@@ -95,29 +95,68 @@ function render () {
 	if(debug)
 	{
 		sDebug.bind();
-		sDebug.setMatrixUniform("viewMatrix", new Mat4().translate(-pos.x, -pos.y, -pos.z));
-		//box.renderDebug(sDebug, 1)
-		model.renderDebug(sDebug, 30);
+		sDebug.setMatrixUniform("viewMatrix", new Mat4().translate(-pos.x, -pos.y, -pos.z).rotate(rot.x, rot.y, rot.z));
+		box.debug(sDebug, 1)
+		model.debug(sDebug);
 	}
 
 	gl.disable(gl.DEPTH_TEST);
 
-	quad.render(s2d);
-	circle.render(s2d)
+	//quad.render(s2d);
+	//circle.render(s2d)
 }
+
+/* logic */
 
 document.onkeydown = function (e) {
     if(e.key === ",")
 		debug = !debug;
 	
-	if(e.key === "z")
-		pos.z += 0.05;
-	if(e.key === "q")
-		pos.x -= 0.05;
-	if(e.key === "s")
-		pos.z -= 0.05;
-	if(e.key === "d")
-		pos.x += 0.05;
+	if(e.key === "z") {
+		pos.x += 0.05 * Math.sin(rot.y);
+		pos.z += 0.05 * Math.cos(rot.y);
+	}
+	if(e.key === "q") {
+		pos.x -= 0.05 * Math.cos(rot.y);
+		pos.z += 0.05 * Math.sin(rot.y);
+	}
+	if(e.key === "s") {
+		pos.x -= 0.05 * Math.sin(rot.y);
+		pos.z -= 0.05 * Math.cos(rot.y);
+	}
+	if(e.key === "d") {
+		pos.x += 0.05 * Math.cos(rot.y);
+		pos.z -= 0.05 * Math.sin(rot.y);
+	}
+}
+
+let mouseX = 0, mouseY = 0;
+let dx, dy;
+let isDown = false;
+document.onmousemove = function (e) {
+	dx = mouseX - e.screenX;
+	dy = mouseY - e.screenY;
+
+	mouseX = e.screenX;
+	mouseY = e.screenY;
+
+	if(isDown) rotateCamera();
+}
+
+document.onmousedown = function () {
+	isDown = true;
+}
+
+document.onmouseup = function () {
+	isDown = false;
+}
+
+function rotateCamera() {
+	rot.y -= dx / 50;
+	rot.x -= dy / 50;
+	
+	if(rot.x > Math.PI / 2) rot.x = Math.PI / 2
+	if(rot.x < - Math.PI / 2) rot.x = - Math.PI / 2
 }
 
 window.onload = init();

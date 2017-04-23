@@ -30,7 +30,7 @@ export class Mesh {
 
 		this.modified = false;
 
-		this.debugLine = new Line(this.gl);
+		this.debugLines = new Primitives(this.gl, vertices.length);
 	}
 
 	render(shader) {
@@ -58,38 +58,33 @@ export class Mesh {
 		gl.activeTexture(gl.TEXTURE0);
 	}
 
-	renderDebug (shader, ignore) {
-		let line = this.debugLine;
-		shader.bind();
+	debug (shader) {
+		let vecs = [];
+		let transforms = [];
+		let colors = [];
 
-		for(let i = 0; i < this.vertices.length; i += 3 * ignore) {
-
-			let p = new Vec3(this.vertices[i], this.vertices[i + 1], this.vertices[i + 2]);
-			let n = new Vec3(this.normals[i], this.normals[i + 1], this.normals[i + 2]);
-			let t = new Vec3(this.tangents[i], this.tangents[i + 1], this.tangents[i + 2]);
+		for(let i = 0; i < this.indices.length; i += 20) {
+			let p = new Vec3(this.vertices[i * 3], this.vertices[i * 3 + 1], this.vertices[i * 3 + 2]);
+			let n = new Vec3(this.normals[i * 3], this.normals[i * 3 + 1], this.normals[i * 3 + 2]);
+			let t = new Vec3(this.tangents[i * 3], this.tangents[i * 3 + 1], this.tangents[i * 3 + 2]);
 
 			let mat = new Mat4()
 				.translate(p.x, p.y, p.z)
 				.mul(this.transformationMatrix);
 
-			shader.setMatrixUniform('transformationMatrix', mat);
-			shader.setVec3Uniform("vector", n);
-			shader.setColor4Uniform("color", new Color4(1.0, 0.0, 0.0, 1.0));
-
-			line.render(shader);
-
-			shader.setMatrixUniform('transformationMatrix', mat);
-			shader.setVec3Uniform("vector", t);
-			shader.setColor4Uniform("color", new Color4(1.0, 1.0, 0.0, 1.0));
-			
-			line.render(shader);
-
-			shader.setMatrixUniform('transformationMatrix', mat);
-			shader.setVec3Uniform("vector", t.copy().cross(n));
-			shader.setColor4Uniform("color", new Color4(0.0, 1.0, 0.0, 1.0));
-			
-			line.render(shader);
+			vecs.push(n);
+			transforms.push(mat);
+			colors.push(new Color4(1, 0, 0, 1));
+			vecs.push(t);
+			transforms.push(mat);
+			colors.push(new Color4(1, 1, 0, 1));
+			vecs.push(t.copy().cross(n));
+			transforms.push(mat);
+			colors.push(new Color4(0, 1, 0, 1));
 		}
+
+		this.debugLines.setDatas(vecs, transforms, colors);
+		this.debugLines.render();
 	}
 
 	setScale (width, height, depth) {
@@ -302,34 +297,82 @@ export class Box extends Mesh{
 	}
 }
 
-export class Line {
-	constructor (gl) {
+export class Primitives {
+	constructor (gl, instances_count) {
 		this.gl = gl;
 		this.vertices = [0.0, 0.0, 0.0, 1.0, 1.0, 1.0];
+		this.datas = [];
 		this.indices = [0, 1];
 
 		this.vao = gl.createVertexArray();
 		this.vbo = gl.createBuffer();
+		this.vio = gl.createBuffer();
 		this.ibo = gl.createBuffer();
+
+		for(let i = 0; i < instances_count * 23; i++)
+			this.datas.push(0);
 
 		gl.bindVertexArray(this.vao);
 			gl.enableVertexAttribArray(0);
+			gl.enableVertexAttribArray(1);
+			gl.enableVertexAttribArray(2);
+			gl.enableVertexAttribArray(3);
+			gl.enableVertexAttribArray(4);
+			gl.enableVertexAttribArray(5);
+			gl.enableVertexAttribArray(6);
 
 			gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
 			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
 			gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+			
+			gl.bindBuffer(gl.ARRAY_BUFFER, this.vio);
+			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.datas), gl.DYNAMIC_DRAW);
+			gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 22 * 4, 0);
+			gl.vertexAttribPointer(2, 4, gl.FLOAT, false, 22 * 4, 3 * 4);
+			gl.vertexAttribPointer(3, 4, gl.FLOAT, false, 22 * 4, 7 * 4);
+			gl.vertexAttribPointer(4, 4, gl.FLOAT, false, 22 * 4, 11 * 4);
+			gl.vertexAttribPointer(5, 4, gl.FLOAT, false, 22 * 4, 15 * 4);
+			gl.vertexAttribPointer(6, 3, gl.FLOAT, false, 22 * 4, 19 * 4);
 
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.ibo);
 			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(this.indices), gl.STATIC_DRAW);
+			
+			gl.vertexAttribDivisor(0, 0);
+			gl.vertexAttribDivisor(1, 1);
+			gl.vertexAttribDivisor(2, 1);
+			gl.vertexAttribDivisor(3, 1);
+			gl.vertexAttribDivisor(4, 1);	
+			gl.vertexAttribDivisor(5, 1);
+			gl.vertexAttribDivisor(6, 1);
 		gl.bindVertexArray(null);
+	}
+
+	setDatas (vecs, transforms, colors) {
+		this.datas = [];
+		for(let i = 0; i < vecs.length; i++) {
+			this.datas.push(vecs[i].x);
+			this.datas.push(vecs[i].y);
+			this.datas.push(vecs[i].z);
+
+			transforms[i].flatten().forEach(v => {
+				this.datas.push(v);
+			});
+
+			this.datas.push(colors[i].r);
+			this.datas.push(colors[i].g);
+			this.datas.push(colors[i].b);
+		}
+
+		let gl = this.gl;
+
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.vio);
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.datas), gl.DYNAMIC_DRAW);
 	}
 
 	render (shader) {
 		let gl = this.gl;
-
-		shader.bind();
 		gl.bindVertexArray(this.vao);
-		gl.drawElements(gl.LINES, this.indices.length, gl.UNSIGNED_INT, 0);
+		gl.drawElementsInstanced(gl.LINES, this.indices.length, gl.UNSIGNED_INT, 0, this.datas.length / 23);
 		gl.bindVertexArray(null);
 	}
 }
