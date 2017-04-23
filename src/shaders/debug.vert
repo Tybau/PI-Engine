@@ -20,5 +20,4 @@ void main(void) {
 	mat4 transformationMatrix = mat4(mat_1, mat_2, mat_3, mat_4);
 
 	gl_Position = projectionMatrix * viewMatrix * transformationMatrix * vec4(0.025 * in_position * in_vector, 1.0);
-	//gl_Position = vec4(in_position, 1.0);
 }

@@ -2,7 +2,7 @@
 precision highp float;
 precision highp int;
 
-struct Light{
+struct PointLight{
 	float intensity;
 	vec3 position;
 	vec4 color;
@@ -16,19 +16,28 @@ in mat3 TBN;
 
 out vec4 out_color;
 
-//uniform Light light;
+uniform PointLight light;
 uniform sampler2D tex;
 uniform sampler2D normalMap;
+uniform sampler2D depthMap;
+
+uniform vec3 viewPos;
+
+vec2 calcParallaxMap(sampler2D dispMap, mat3 tbnMatrix, vec3 directionToEye, vec2 texCoords, float scale, float bias) {
+    return texCoords.xy + (directionToEye * tbnMatrix).xy * (texture(dispMap, texCoords.xy).r * scale + bias);
+}
 
 void main(void) {
-	Light light;
-	light.intensity = 5.0;
-	light.position = vec3(-1.0, 0.0, 0);
-	light.color = vec4(0.9, 0.8, 0.6, 1.0);
+	vec3 TBN_lightPos = TBN * light.position;
+	vec3 TBN_viewPos = TBN * viewPos;
+	vec3 TBN_pos = TBN * v_position.xyz;
+
+	vec3 viewDir = normalize(v_position.xyz - viewPos);
+	vec2 parallaxTexCoord = calcParallaxMap(depthMap, TBN, viewDir, v_textureCoord,  0.25, 0.0);
 
 	vec3 lightDir = light.position - v_position.xyz;
 
-	vec3 normal = texture(normalMap, v_textureCoord).rgb;
+	vec3 normal = texture(normalMap, parallaxTexCoord).rgb;
     normal = normalize(normal * 2.0 - 1.0);   
 	normal = normalize(TBN * normal);
 
@@ -37,5 +46,7 @@ void main(void) {
 	float lightFactor = max(1.0 / lightDistance * diffuse, 0.0);
 
 	vec3 light_color = vec3(light.color) * max(lightFactor * light.intensity, 0.1);
-	out_color = texture(tex, v_textureCoord) * vec4(light_color, 1.0);
+	out_color = texture(tex, parallaxTexCoord) * vec4(light_color, 1.0);
+	//out_color *= texture(depthMap, parallaxTexCoord) * 0.5 + 0.5;  ambiant occlusion vite fait
 }
+

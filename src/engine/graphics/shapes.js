@@ -1,5 +1,5 @@
-import {Mat4, Vec3} from './maths.js'
-import {Texture} from './graphics.js'
+import {Mat4, Vec3} from '../maths.js'
+import {Texture} from '../graphics.js'
 
 export class Shape {
 	constructor (webGL, texture, vertices, uvs, indices) {

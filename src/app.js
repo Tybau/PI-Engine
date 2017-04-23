@@ -1,7 +1,9 @@
 import {WebGL, Shader} from './engine/graphics.js'
-import {Mat4, Vec3} from './engine/maths.js'
-import {Quad, Circle} from './engine/shapes.js'
-import {Box, Model} from './engine/meshes.js'
+import {Mat4, Vec3, Color4} from './engine/maths.js'
+import {Quad, Circle} from './engine/graphics/shapes.js'
+import {Box, Model} from './engine/graphics/meshes.js'
+import {Camera} from './engine/graphics/camera.js'
+import {PointLight} from './engine/lights.js'
 
 import v_2d from './shaders/main_2d.vert'
 import f_2d from './shaders/main_2d.frag'
@@ -27,21 +29,28 @@ let debug = false;
 let pos = new Vec3(0, 0, 0);
 let rot = new Vec3(0, 0, 0);
 
+let camera;
+
+let light;
+
 function init () {
 	wGL = new WebGL(canvas);
 	gl = wGL.getContext();
 	if (gl) {
 		gl.enable(gl.BLEND);
 		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+		
+		camera = new Camera();
+		camera.setPerspective(70.0, canvas.width, canvas.height, 0.1, 100.0);
 
 		s2d = new Shader(wGL, v_2d, f_2d);
 		s2d.setMatrixUniform("projectionMatrix",  new Mat4().ortho(0, canvas.width, canvas.height, 0, -1, 1));
 		
 		s3d = new Shader(wGL, v_3d, f_3d);
-		s3d.setMatrixUniform("projectionMatrix",  new Mat4().perspective(70.0, canvas.width/canvas.height, 0.1, 100.0));
+		s3d.setMatrixUniform("projectionMatrix",  camera.getPerspective());
 
 		sDebug = new Shader(wGL, v_debug, f_debug);
-		sDebug.setMatrixUniform("projectionMatrix",  new Mat4().perspective(70.0, canvas.width/canvas.height, 0.1, 100.0));
+		sDebug.setMatrixUniform("projectionMatrix", camera.getPerspective());
 
 		quad = new Quad(wGL, "cafe.png");
 		quad.setScale(100, 100);
@@ -51,14 +60,20 @@ function init () {
 		circle.setScale(50, 50);
         circle.setPosition(-500, -300);
 
-		box = new Model(wGL, cube, "brique.png", "normal2.png");
+		box = new Model(wGL, cube);
+		box.setTexture("pierre.jpg");
+		box.setNormalMap("pierre_normal_map.png");
+		box.setDepthMap("pierre_depth_map.png")
 		box.setScale(0.5, 0.5, 0.5);
 		box.setPosition(1.5, 0, 2);
 		
-
-		model = new Model(wGL, earth, "earth.jpg", "earth_normal.jpg");
+		model = new Model(wGL, earth);
+		model.setTexture("earth.jpg");
+		model.setNormalMap("earth_normal.jpg")
 		model.setPosition(0, 0, 2);
 		model.setScale(1.5, 1.5, 1.5);
+
+		light = new PointLight(5.0, new Vec3(-1.0, 0.0, 0.0), new Color4(0.9, 0.8, 0.6, 1.0));
 
 		loop();
 	}
@@ -75,6 +90,8 @@ let t = 0;
 function update () {
 	t += 0.002;
 
+	camera.update();
+
 	model.setRotation(Math.PI + 0.4, t, 0.4);
 
 	box.setRotation(t, t, t);
@@ -87,7 +104,9 @@ function render () {
 	gl.enable(gl.DEPTH_TEST);
 
 	s3d.bind();
-	s3d.setMatrixUniform("viewMatrix", new Mat4().translate(-pos.x, -pos.y, -pos.z).rotate(rot.x, rot.y, rot.z));
+	s3d.setVec3Uniform("viewPos", camera.getPosition());
+	light.setUniform(s3d, "light");
+	s3d.setMatrixUniform("viewMatrix", camera.getViewMatrix());
 
 	box.render(s3d);
 	model.render(s3d);
@@ -95,15 +114,15 @@ function render () {
 	if(debug)
 	{
 		sDebug.bind();
-		sDebug.setMatrixUniform("viewMatrix", new Mat4().translate(-pos.x, -pos.y, -pos.z).rotate(rot.x, rot.y, rot.z));
+		sDebug.setMatrixUniform("viewMatrix", camera.getViewMatrix());
 		box.debug(sDebug, 1)
 		model.debug(sDebug);
 	}
 
 	gl.disable(gl.DEPTH_TEST);
 
-	//quad.render(s2d);
-	//circle.render(s2d)
+	quad.render(s2d);
+	circle.render(s2d)
 }
 
 /* logic */
@@ -113,20 +132,20 @@ document.onkeydown = function (e) {
 		debug = !debug;
 	
 	if(e.key === "z") {
-		pos.x += 0.05 * Math.sin(rot.y);
-		pos.z += 0.05 * Math.cos(rot.y);
+		camera.pos.x += 0.05 * Math.sin(rot.y);
+		camera.pos.z += 0.05 * Math.cos(rot.y);
 	}
 	if(e.key === "q") {
-		pos.x -= 0.05 * Math.cos(rot.y);
-		pos.z += 0.05 * Math.sin(rot.y);
+		camera.pos.x -= 0.05 * Math.cos(rot.y);
+		camera.pos.z += 0.05 * Math.sin(rot.y);
 	}
 	if(e.key === "s") {
-		pos.x -= 0.05 * Math.sin(rot.y);
-		pos.z -= 0.05 * Math.cos(rot.y);
+		camera.pos.x -= 0.05 * Math.sin(rot.y);
+		camera.pos.z -= 0.05 * Math.cos(rot.y);
 	}
 	if(e.key === "d") {
-		pos.x += 0.05 * Math.cos(rot.y);
-		pos.z -= 0.05 * Math.sin(rot.y);
+		camera.pos.x += 0.05 * Math.cos(rot.y);
+		camera.pos.z -= 0.05 * Math.sin(rot.y);
 	}
 }
 
@@ -152,11 +171,11 @@ document.onmouseup = function () {
 }
 
 function rotateCamera() {
-	rot.y -= dx / 50;
-	rot.x -= dy / 50;
+	camera.rot.y -= dx / 50;
+	camera.rot.x -= dy / 50;
 	
-	if(rot.x > Math.PI / 2) rot.x = Math.PI / 2
-	if(rot.x < - Math.PI / 2) rot.x = - Math.PI / 2
+	if(camera.rot.x > Math.PI / 2) camera.rot.x = Math.PI / 2
+	if(camera.rot.x < - Math.PI / 2) camera.rot.x = - Math.PI / 2
 }
 
 window.onload = init();
