@@ -20,8 +20,8 @@ out mat3 TBN;
 void main(void) {
 	vec3 T = vec3(transformationMatrix * vec4(in_tangent, 0.0));
 	vec3 N = vec3(transformationMatrix * vec4(in_normal, 0.0));
-	T = T - dot(T, N) * N; // wtf
-	vec3 B = cross(T, N);
+	//T = T - dot(T, N) * N; // wtf
+	vec3 B = cross(N, T);
 	TBN = mat3(T, B, N);
 
 	v_position =  transformationMatrix * vec4(in_position, 1.0);

@@ -39,10 +39,6 @@ export class Mesh extends Drawable{
 
 		if(this.modified) this.resetTransformationMatrix();
 
-		shader.bind();
-
-		if(this)
-
 		gl.activeTexture(gl.TEXTURE0);
 		shader.setIntegerUniform("tex", 0);
 		this.texture.bind();
@@ -61,6 +57,15 @@ export class Mesh extends Drawable{
 		gl.bindVertexArray(null);
 
 		gl.activeTexture(gl.TEXTURE0);
+	}
+
+	renderWithBright(shader) {
+		let gl = this.gl;
+		shader.setColor4Uniform("bright_color", this.brightColor);
+		shader.setMatrixUniform("transformationMatrix", this.transformationMatrix);
+		gl.bindVertexArray(this.vao);
+		gl.drawElements(gl.TRIANGLES, this.indices.length, gl.UNSIGNED_INT, 0);
+		gl.bindVertexArray(null);
 	}
 
 	debug (shader) {
@@ -83,7 +88,7 @@ export class Mesh extends Drawable{
 			vecs.push(t);
 			transforms.push(mat);
 			colors.push(new Color4(1, 1, 0, 1));
-			vecs.push(t.copy().cross(n));
+			vecs.push(n.copy().cross(t));
 			transforms.push(mat);
 			colors.push(new Color4(0, 1, 0, 1));
 		}

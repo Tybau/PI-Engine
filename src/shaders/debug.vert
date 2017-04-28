@@ -18,6 +18,6 @@ uniform mat4 viewMatrix;
 void main(void) {
 	v_color = vec4(in_color, 1.0);
 	mat4 transformationMatrix = mat4(mat_1, mat_2, mat_3, mat_4);
-
+	vec4 world_position = 
 	gl_Position = projectionMatrix * viewMatrix * transformationMatrix * vec4(0.025 * in_position * in_vector, 1.0);
 }

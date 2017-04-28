@@ -179,6 +179,12 @@ export class Vec3{
 		this.z -= v.z;
 		return this;
 	}
+	mulVector(v){
+		this.x *= v.x;
+		this.y *= v.y;
+		this.z *= v.z;
+		return this;
+	}
 	mul(v){
 		this.x *= v;
 		this.y *= v;

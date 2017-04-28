@@ -24,16 +24,13 @@ uniform sampler2D depthMap;
 uniform vec3 viewPos;
 
 vec2 calcParallaxMap(sampler2D dispMap, mat3 tbnMatrix, vec3 directionToEye, vec2 texCoords, float scale, float bias) {
-    return texCoords.xy + (directionToEye * tbnMatrix).xy * (texture(dispMap, texCoords.xy).r * scale + bias);
+    return texCoords.xy - (directionToEye * tbnMatrix).xy * (texture(dispMap, texCoords.xy).r * scale + bias);
 }
 
 void main(void) {
-	vec3 TBN_lightPos = TBN * light.position;
-	vec3 TBN_viewPos = TBN * viewPos;
-	vec3 TBN_pos = TBN * v_position.xyz;
-
-	vec3 viewDir = normalize(v_position.xyz - viewPos);
-	vec2 parallaxTexCoord = calcParallaxMap(depthMap, TBN, viewDir, v_textureCoord,  0.25, 0.0);
+	vec3 viewDir = normalize(viewPos - v_position.xyz);
+	vec2 parallaxTexCoord = calcParallaxMap(depthMap, TBN, viewDir, v_textureCoord,  0.1, 0.0);
+	//vec2 parallaxTexCoord = ParallaxMapping(v_textureCoord, viewDir);
 
 	vec3 lightDir = light.position - v_position.xyz;
 
@@ -46,7 +43,9 @@ void main(void) {
 	float lightFactor = max(1.0 / lightDistance * diffuse, 0.0);
 
 	vec3 light_color = vec3(light.color) * max(lightFactor * light.intensity, 0.1);
+
 	out_color = texture(tex, parallaxTexCoord) * vec4(light_color, 1.0);
+	
 	//out_color *= texture(depthMap, parallaxTexCoord) * 0.5 + 0.5;  ambiant occlusion vite fait
 }
 

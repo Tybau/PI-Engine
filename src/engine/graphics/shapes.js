@@ -160,3 +160,54 @@ function tesselateCircle (vertices, uvs, indices, width, height) {
 	indices.push(edge_count);
 	indices.push(1);
 }
+
+
+/* Render Scene */
+
+export class WideRenderer {
+	constructor (webGL) {
+		let gl = webGL.getContext();
+		this.gl = gl;
+
+		this.vertices = [
+			-1.0,	-1.0,
+			-1.0,	1.0,
+			1.0,	1.0,
+			1.0,	-1.0
+		];
+
+		this.indices = [
+			0, 2, 1, 0, 3, 2
+		];
+
+		this.vao = gl.createVertexArray();
+		this.vbo = gl.createBuffer();
+		this.ibo = gl.createBuffer();
+
+		this.generateVao();
+	}
+
+	render(shader) {
+		let gl = this.gl;
+
+		gl.bindVertexArray(this.vao);
+		gl.drawElements(gl.TRIANGLES, this.indices.length, gl.UNSIGNED_INT, 0);
+		gl.bindVertexArray(null);
+
+		gl.activeTexture(gl.TEXTURE0);
+	}
+
+	generateVao () {
+		let gl = this.gl;
+		gl.bindVertexArray(this.vao);
+			gl.enableVertexAttribArray(0);
+
+			gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
+			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
+			gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+
+			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.ibo);
+			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(this.indices), gl.STATIC_DRAW);
+		gl.bindVertexArray(null);
+	}
+}
