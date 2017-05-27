@@ -69,10 +69,10 @@ export class Mat4{
 		return this.mul(i);
 	}
 	rotate(x, y, z){
-		this.rotateX(x);
-		this.rotateY(y);
 		this.rotateZ(z);
-
+		this.rotateY(y);
+		this.rotateX(x);
+		
 		return this;
 	}
 	scale(x, y, z){
