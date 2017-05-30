@@ -15,6 +15,7 @@ struct DirectionalLight{
 };
 
 in vec4 v_position;
+in vec4 v_relativePosition;
 in vec2 v_textureCoord;
 in vec3 v_normal;
 
@@ -36,6 +37,7 @@ vec2 calcParallaxMap(sampler2D dispMap, mat3 tbnMatrix, vec3 directionToEye, vec
 }
 
 void main(void) {
+	/* Point Light */
 	vec3 viewDir = normalize(viewPos - v_position.xyz);
 	vec2 parallaxTexCoord = calcParallaxMap(depthMap, TBN, viewDir, v_textureCoord,  0.1, 0.0);
 
@@ -51,8 +53,14 @@ void main(void) {
 
 	vec3 light_color = vec3(light.color) * max(lightFactor * light.intensity, 0.1);
 
+	/* Directional Light */
 	diffuse = dot(normalize(normal), normalize(-dLight.direction));
 	light_color += vec3(dLight.color) * max(diffuse * dLight.intensity, 0.1);
 
+	/* Fog */
+	float fog = (15.0 - length(v_relativePosition)) / 15.0;
+	fog = clamp(fog, 0.0, 1.0);
+
 	out_color = texture(tex, parallaxTexCoord) * vec4(light_color, 1.0);
+	out_color = mix(vec4(0.3, 0.5, 0.9, 1.0), out_color, vec4(fog));
 }

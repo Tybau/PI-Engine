@@ -72,7 +72,7 @@ export class Mat4{
 		this.rotateZ(z);
 		this.rotateY(y);
 		this.rotateX(x);
-		
+
 		return this;
 	}
 	scale(x, y, z){

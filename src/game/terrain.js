@@ -43,7 +43,7 @@ export class Terrain extends Mesh{
 				n = v.cross(w);
 				n = n.normalize();
 
-				vertices.push(i + 1, getNoise(i + 1, j + 1), j + 1);
+				vertices.push(i, getNoise(i, j + 1), j + 1);
 				colors.push(0.2, 0.7, 0.3, 1.0);
 				normals.push(n.x, n.y, n.z);
 				indices.push(index * 6 + 3);
@@ -53,7 +53,7 @@ export class Terrain extends Mesh{
 				normals.push(n.x, n.y, n.z);
 				indices.push(index * 6 + 4);
 
-				vertices.push(i, getNoise(i, j + 1), j + 1);
+				vertices.push(i + 1, getNoise(i + 1, j + 1), j + 1);
 				colors.push(0.2, 0.7, 0.3, 1.0);
 				normals.push(n.x, n.y, n.z);
 				indices.push(index * 6 + 5);
@@ -67,5 +67,5 @@ export class Terrain extends Mesh{
 let pn = new Perlin("random seed")
 
 function getNoise(x, y) {
-	return pn.noise(x / 15, y / 15, 0) * 10 - 5;
+	return pn.noise(x / 10, y / 10, 0) * 2 - 1.5;
 }

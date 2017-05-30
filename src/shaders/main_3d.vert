@@ -12,6 +12,7 @@ uniform mat4 viewMatrix;
 uniform mat4 transformationMatrix;
 
 out vec4 v_position;
+out vec4 v_relativePosition;
 out vec2 v_textureCoord;
 out vec3 v_normal;
 
@@ -25,7 +26,8 @@ void main(void) {
 	TBN = mat3(T, B, N);
 
 	v_position =  transformationMatrix * vec4(in_position, 1.0);
+	v_relativePosition = viewMatrix * v_position;
 	v_textureCoord = in_textureCoord;
 	v_normal = N;
-	gl_Position = projectionMatrix * viewMatrix * v_position;
+	gl_Position = projectionMatrix * v_relativePosition ;
 }

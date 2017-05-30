@@ -11,12 +11,14 @@ uniform mat4 viewMatrix;
 uniform mat4 transformationMatrix;
 
 out vec4 v_position;
+out vec4 v_relativePosition;
 out vec4 v_color;
 out vec3 v_normal;
 
 void main(void) {
 	v_position =  transformationMatrix * vec4(in_position, 1.0);
+	v_relativePosition = viewMatrix * v_position;
 	v_color = in_color;
 	v_normal = vec3(transformationMatrix * vec4(in_normal, 0.0));
-	gl_Position = projectionMatrix * viewMatrix * v_position;
+	gl_Position = projectionMatrix * v_relativePosition;
 }

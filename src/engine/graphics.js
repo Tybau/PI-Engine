@@ -3,6 +3,7 @@ import {Mat4} from './maths.js'
 export class WebGL {
 	constructor(canvas) {
 		this.gl = null;
+		this.canvas = canvas;
 		try {
 			this.gl = canvas.getContext("webgl2") || canvas.getContext("experimental-webgl2")
 		}
