@@ -24,6 +24,7 @@ import f_debug from './shaders/debug.frag'
 import cube from '#/assets/models/cube.obj'
 import earth from '#/assets/models/earth.obj'
 import test from '#/assets/models/test.obj'
+import knight from '#/assets/models/knight.obj'
 
 let canvas = document.querySelector('#glcanvas');
 let wGL;
@@ -33,6 +34,8 @@ let s2d, s3d, s3dColored, sDebug;
 let quad, circle;
 let box, model, lightBox, truc;
 let map;
+
+let zombie;
 
 let debug = false;
 
@@ -89,6 +92,10 @@ function init () {
 		model.setPosition(0, 0, 2);
 		model.setScale(1.5, 1.5, 1.5);
 
+		zombie = new Model(wGL, knight);
+		zombie.setScale(0.1, 0.1, 0.1);
+		zombie.setPosition(-1.0, 0.0, -1.0);
+
 		map = new Map(wGL);
 
 		light = new PointLight(0.5, new Vec3(-0.5, -1.0, -1.0), new Color4(0.5, 0.7, 0.9, 1.0));
@@ -143,7 +150,8 @@ function render () {
 	box.render(s3d);
 	model.render(s3d);
 
-	console.log(players);
+	zombie.render(s3d);
+
 	for(let p in players)
 		if(players[p]) players[p].model.render(s3d);
 
@@ -153,7 +161,7 @@ function render () {
 	dLight.setUniform(s3dColored, "dLight");
 	s3dColored.setMatrixUniform("viewMatrix", mainPlayer.camera.getViewMatrix());
 
-	map.render(s3dColored);
+	map.render(s3dColored, s3d);
 
 	/* end render scene */
 
@@ -177,7 +185,7 @@ window.onload = init();
 
 mainPlayer.socket.on('new-player', function(p) {
 	let player = new RenderablePlayer(wGL, p.id);
-	player.model.setPosition(p.pos.x, p.pos.y, p.pos.z);
+	player.model.setPosition(p.pos.x, p.pos.y - 1, p.pos.z);
 	player.model.setRotation(0, p.rot.y, 0);
 	players[p.id] = player;
 });
@@ -191,8 +199,8 @@ mainPlayer.socket.on('sync-other', function(p) {
 	let rot = p.rot;
 	let player = players[p.id];
 	if(!player)  return;
-	player.model.setPosition(pos.x, pos.y, pos.z);
-	player.model.setRotation(0, rot.y, 0);
+	player.model.setPosition(pos.x, pos.y - 1, pos.z);
+	player.model.setRotation(0, - rot.y, 0);
 });
 
 mainPlayer.socket.on('sync-others', function(ps) {
@@ -201,8 +209,8 @@ mainPlayer.socket.on('sync-others', function(ps) {
 		let p = ps[pId];
 		if(!p) continue;
 		let player = new RenderablePlayer(wGL, p.id);
-		player.model.setPosition(p.pos.x, p.pos.y, p.pos.z);
-		player.model.setRotation(0, Math.PI / 2 - p.rot.y, 0);
+		player.model.setPosition(p.pos.x, p.pos.y - 1, p.pos.z);
+		player.model.setRotation(0,  - p.rot.y, 0);
 		players[p.id] = player;
 	}
 });

@@ -14,7 +14,7 @@ export class RenderablePlayer extends Player{
 	constructor (webGL, id) {
 		super(id);
 		this.model = new Model(webGL, model);
-		this.model.setScale(0.3, 0.3, 0.3);
+		this.model.setScale(0.4, 0.4, 0.4);
 	}
 }
 
@@ -24,9 +24,11 @@ export class MainPlayer extends Player{
 		this.keys = {};
 
 		this.camera = new Camera();
-		this.camera.setPerspective(70.0, webGL.canvas.width, webGL.canvas.height, 0.1, 100.0);
+		this.camera.setPerspective(70.0, webGL.canvas.width, webGL.canvas.height, 0.1, 50.0);
 
 		this.socket = io('http://aet-io.com:8080')
+
+		this.camera.setPosition(0, 1, 0);
 
 		this.socket.on('gen-uuid', (id) =>{
 			this.id = id;
@@ -49,13 +51,13 @@ export class MainPlayer extends Player{
 			this.camera.pos.addVector(this.camera.getRight().mul(0.05));
 		}
 
-		if(this.keys[" "]) {
+		/*if(this.keys[" "]) {
 			this.camera.pos.addVector(new Vec3(0, 0.05, 0));
 		}
 
 		if(this.keys["Shift"]) {
 			this.camera.pos.addVector(new Vec3(0, -0.05, 0));
-		}
+		}*/
 		this.camera.update();
 	}
 }

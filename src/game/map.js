@@ -1,6 +1,8 @@
-import {Mesh} from '../engine/graphics/meshes.js'
+import {Mesh, Model} from '../engine/graphics/meshes.js'
 import {Vec3, Color4} from '../engine/maths.js'
 import {Terrain} from './terrain.js'
+
+import windowModel from '#/assets/models/window.obj'
 
 export class Floor extends Mesh{
 	constructor(webGL, color) {
@@ -101,6 +103,17 @@ export class WindowedWall extends Mesh{
 
 		super (webGL, vertices, colors, normals, indices);
 		this.color = color;
+
+		this.window = new Model(webGL, windowModel);
+	}
+	render (shader, modelShader) {
+		super.render(shader);
+
+		this.window.setPosition(this.pos.x, this.pos.y, this.pos.z);
+		this.window.setRotation(this.rot.x, this.rot.y, this.rot.z);
+		modelShader.bind();
+		this.window.render(modelShader);
+		shader.bind();
 	}
 }
 
@@ -179,9 +192,9 @@ export class Map {
 		this.terrain.setPosition(-50, 0, -50);
 	}
 
-	render (shader) {
+	render (shader, modelShader) {
 		this.floor.render(shader);
-		this.walls.forEach(w => w.render(shader));
+		this.walls.forEach(w => w.render(shader, modelShader));
 
 		this.terrain.render(shader);
 	}

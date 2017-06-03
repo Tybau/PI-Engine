@@ -3,8 +3,10 @@ import {Mat4, Vec3, Vec2, Color4} from '../maths.js'
 import {Texture} from '../graphics.js'
 import {Primitives} from './debug.js'
 
-export class Mesh {
+export class Mesh extends Drawable{
 	constructor (webGL, vertices, colors, normals, indices) {
+		super(webGL);
+
 		let gl = webGL.getContext();
 		this.gl = gl;
 
