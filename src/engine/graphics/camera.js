@@ -4,6 +4,7 @@ export class Camera {
 	constructor () {
 		this.projectionMatrix = new Mat4();
 		this.viewMatrix = new Mat4();
+		this.transformationMatrix = new Mat4();
 
 		this.pos = new Vec3(0, 0, 0);
 		this.rot = new Vec3(0, 0, 0);
@@ -26,13 +27,13 @@ export class Camera {
 			.translate(-this.pos.x, -this.pos.y, -this.pos.z)
 			.rotate(this.rot.x, this.rot.y, this.rot.z)
 	}
-	
+
 	setPosition (x, y, z) {
 		this.pos.x = x;
 		this.pos.y = y;
 		this.pos.z = z;
 	}
-	
+
 	getPosition () {
 		return this.pos;
 	}

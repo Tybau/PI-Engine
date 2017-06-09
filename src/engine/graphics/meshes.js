@@ -157,13 +157,35 @@ export class TexturedMesh extends Drawable{
 		gl.activeTexture(gl.TEXTURE0);
 	}
 
-	renderWithBright(shader) {
+	renderAdChildren(shader, parentTransform) {
 		let gl = this.gl;
-		shader.setColor4Uniform("bright_color", this.brightColor);
+
+		let transformationMatrix = new Mat4();
+
+		transformationMatrix.scale(this.scale.x, this.scale.y, this.scale.z);
+		transformationMatrix.rotate(this.rot.x, this.rot.y, this.rot.z);
+		transformationMatrix.translate(this.pos.x, this.pos.y, this.pos.z);
+
+		this.transformationMatrix = transformationMatrix.mul(parentTransform);
+
+		gl.activeTexture(gl.TEXTURE0);
+		shader.setIntegerUniform("tex", 0);
+		this.texture.bind();
+
+		gl.activeTexture(gl.TEXTURE1);
+		shader.setIntegerUniform("normalMap", 1);
+		this.normalMap.bind();
+
+		gl.activeTexture(gl.TEXTURE2);
+		shader.setIntegerUniform("depthMap", 2);
+		this.depthMap.bind();
+
 		shader.setMatrixUniform("transformationMatrix", this.transformationMatrix);
 		gl.bindVertexArray(this.vao);
 		gl.drawElements(gl.TRIANGLES, this.indices.length, gl.UNSIGNED_INT, 0);
 		gl.bindVertexArray(null);
+
+		gl.activeTexture(gl.TEXTURE0);
 	}
 
 	debug (shader) {
@@ -227,6 +249,8 @@ export class TexturedMesh extends Drawable{
 		transformationMatrix.translate(this.pos.x, this.pos.y, this.pos.z);
 
 		this.transformationMatrix = transformationMatrix;
+
+		this.modified = false;
 	}
 
 	generateVao () {

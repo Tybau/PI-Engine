@@ -115,15 +115,16 @@ export class Texture {
 		let gl = this.webGl.getContext()
 		this.id = gl.createTexture()
 		this.image = new Image()
-		this.image.onload = () => {
+		this.image.src = "./assets/textures/" + path
+		//this.image.onload = () => {
 			gl.bindTexture(gl.TEXTURE_2D, this.id)
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image)
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 			gl.generateMipmap(gl.TEXTURE_2D);
 			gl.bindTexture(gl.TEXTURE_2D, null);
-		}
-		this.image.src = "./assets/textures/" + path
+		//}
+
 	}
 	bind () {
 		let gl = this.webGl.getContext()

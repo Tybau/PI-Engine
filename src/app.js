@@ -7,7 +7,8 @@ import {PointLight, DirectionalLight} from './engine/lights.js'
 
 import {Terrain} from './game/terrain.js'
 import {Map} from './game/map.js'
-import {MainPlayer, RenderablePlayer} from './game/entities/player.js'
+import {MainPlayer} from './game/entities/player.js'
+import {entityTypes, RenderablePlayer} from './game/entities/entity.js'
 
 import v_2d from './shaders/main_2d.vert'
 import f_2d from './shaders/main_2d.frag'
@@ -35,15 +36,13 @@ let quad, circle;
 let box, model, lightBox, truc;
 let map;
 
-let zombie;
-
 let debug = false;
 
 let light, dLight;
 
 let connected = false;
 let mainPlayer;
-let players = {};
+let entities = {};
 let uid;
 
 function init () {
@@ -72,13 +71,13 @@ function init () {
 		sDebug = new Shader(wGL, v_debug, f_debug);
 		sDebug.setMatrixUniform("projectionMatrix", mainPlayer.camera.getPerspective());
 
-		quad = new Quad(wGL, "cafe.png");
+		/*quad = new Quad(wGL, "cafe.png");
 		quad.setScale(100, 100);
 		quad.setPosition(-700, 0);
 
 		circle = new Circle(wGL, "block.png");
 		circle.setScale(50, 50);
-        circle.setPosition(-700, -400);
+        circle.setPosition(-700, -400);*/
 
 		box = new Model(wGL, cube);
 		box.setTexture("brique.jpg");
@@ -91,10 +90,6 @@ function init () {
 		model.setTexture("test.png");
 		model.setPosition(0, 0, 2);
 		model.setScale(1.5, 1.5, 1.5);
-
-		zombie = new Model(wGL, knight);
-		zombie.setScale(0.1, 0.1, 0.1);
-		zombie.setPosition(-1.0, 0.0, -1.0);
 
 		map = new Map(wGL);
 
@@ -123,10 +118,16 @@ function update () {
 
 	light.position = mainPlayer.camera.getPosition();
 
+	for(let entityId in entities)
+		if(entities[entityId]) entities[entityId].update();
+
 	if(mainPlayer.socket)
-		mainPlayer.socket.emit("sync-me", {
+		mainPlayer.socket.emit("tick-sync", {
 			id : mainPlayer.id,
-			pos : mainPlayer.camera.pos,
+			pos : {	x:mainPlayer.camera.pos.x,
+					y:mainPlayer.camera.pos.y - 1,
+					z:mainPlayer.camera.pos.z
+			},
 			rot : mainPlayer.camera.rot
 		});
 }
@@ -150,10 +151,8 @@ function render () {
 	box.render(s3d);
 	model.render(s3d);
 
-	zombie.render(s3d);
-
-	for(let p in players)
-		if(players[p]) players[p].model.render(s3d);
+	for(let entityId in entities)
+		if(entities[entityId]) entities[entityId].render(s3d);
 
 	s3dColored.bind();
 
@@ -176,41 +175,36 @@ function render () {
 	gl.disable(gl.DEPTH_TEST);
 	gl.disable(gl.CULL_FACE);
 
-	s2d.bind();
+	/*s2d.bind();
 	quad.render(s2d);
-	circle.render(s2d)
+	circle.render(s2d)*/
 }
 
 window.onload = init();
 
-mainPlayer.socket.on('new-player', function(p) {
-	let player = new RenderablePlayer(wGL, p.id);
-	player.model.setPosition(p.pos.x, p.pos.y - 1, p.pos.z);
-	player.model.setRotation(0, p.rot.y, 0);
-	players[p.id] = player;
+canvas.onclick = function() {
+  canvas.requestPointerLock();
+};
+
+mainPlayer.socket.on('rm-entity', function(id) {
+	delete entities[id];
 });
 
-mainPlayer.socket.on('rm-player', function(id) {
-	delete players[id];
-});
-
-mainPlayer.socket.on('sync-other', function(p) {
-	let pos = p.pos;
-	let rot = p.rot;
-	let player = players[p.id];
-	if(!player)  return;
-	player.model.setPosition(pos.x, pos.y - 1, pos.z);
-	player.model.setRotation(0, - rot.y, 0);
-});
-
-mainPlayer.socket.on('sync-others', function(ps) {
-	for(let pId in ps) {
-		if(pId == mainPlayer.id) continue;
-		let p = ps[pId];
-		if(!p) continue;
-		let player = new RenderablePlayer(wGL, p.id);
-		player.model.setPosition(p.pos.x, p.pos.y - 1, p.pos.z);
-		player.model.setRotation(0,  - p.rot.y, 0);
-		players[p.id] = player;
+mainPlayer.socket.on('sync-entities', function(entitiesToSync) {
+	for(let entityId in entitiesToSync) {
+		if(entitiesToSync[entityId] == null) {
+			continue;
+		}
+		if(entityId == mainPlayer.id) continue;
+		let e = entitiesToSync[entityId];
+		let entity = entities[e.id];
+		if(!entity) {
+			entity = new entityTypes[e.type](wGL, e.id);
+			entities[e.id] = entity;
+		}
+		entity.pos = e.pos;
+		entity.rot = e.rot;
+		//entity.model.setPosition(e.pos.x, e.pos.y, e.pos.z);
+		//entity.model.setRotation(0, - e.rot.y, 0);
 	}
 });

@@ -1,26 +1,10 @@
-import model from '#/assets/models/player.obj'
-import {Model} from '&/engine/graphics/meshes.js'
 import {Camera} from '&/engine/graphics/camera.js'
+import {Model} from '&/engine/graphics/meshes.js'
 import {Vec3} from '&/engine/maths.js'
 import io from 'socket.io-client'
 
-export class Player {
-	constructor (id) {
-		this.id = id;
-	}
-}
-
-export class RenderablePlayer extends Player{
-	constructor (webGL, id) {
-		super(id);
-		this.model = new Model(webGL, model);
-		this.model.setScale(0.4, 0.4, 0.4);
-	}
-}
-
-export class MainPlayer extends Player{
+export class MainPlayer{
 	constructor (webGL) {
-		super(null);
 		this.keys = {};
 
 		this.camera = new Camera();
@@ -73,26 +57,31 @@ function saveKeys(player) {
 		if(e.key == ",")
 		  debug = false;
 	});
+	window.addEventListener("keypress", (e) => {
+		if(e.key == "a") {
+			player.socket.emit("killall", "zombie");
+		}
+	});
 }
 
 function rotateCamera(player) {
 	let mouseX = 0, mouseY = 0;
 	let dx, dy;
 	let isDown = false;
-	document.onmousemove = (e) => {
-		dx = mouseX - e.screenX;
-		dy = mouseY - e.screenY;
+	window.addEventListener('mousemove', (e) => {
+		dx = e.movementX;
+		dy = e.movementY;
 
 		mouseX = e.screenX;
 		mouseY = e.screenY;
 
-		if(isDown) {
-			player.camera.rot.y -= dx / 50;
-			player.camera.rot.x -= dy / 50;
+		if(document.pointerLockElement) {
+			player.camera.rot.y += dx / 50;
+			player.camera.rot.x += dy / 50;
 			if(player.camera.rot.x > Math.PI / 2) player.camera.rot.x = Math.PI / 2;
 			if(player.camera.rot.x < - Math.PI / 2) player.camera.rot.x = - Math.PI / 2;
 		}
-	}
+	});
 
 	document.onmousedown = function () {
 		isDown = true;
